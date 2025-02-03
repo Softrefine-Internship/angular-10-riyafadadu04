@@ -1,1 +1,52 @@
-<p>tag-dialog works!</p>
+<div class="container">
+  <div class="heading">
+    <h2 mat-dialog-title class="heading__title">
+      <span><mat-icon class="header__title--icon">label</mat-icon></span
+      ><span>Tagging</span>
+    </h2>
+    <button mat-icon-button (click)="closeDialog()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <div class="tagging">
+    <div class="tagging__image-data full-width">
+      <p>Image Name : {{ image?.name }}</p>
+    </div>
+    <mat-form-field class="tagging__tags full-width">
+      <mat-label>Image Tags :</mat-label>
+      <mat-chip-grid #chipGrid aria-label="Enter tags">
+        <mat-chip-row
+          *ngFor="let tag of tags"
+          (removed)="removeTag(tag)"
+          [editable]="true"
+          (edited)="editTag(tag, $event)"
+        >
+          {{ tag }}
+          <mat-icon matChipRemove>close</mat-icon>
+        </mat-chip-row>
+        <input
+          placeholder="Add a tag"
+          [matChipInputFor]="chipGrid"
+          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+          [matChipInputAddOnBlur]="true"
+          (matChipInputTokenEnd)="addTag($event)"
+        />
+      </mat-chip-grid>
+    </mat-form-field>
+
+    <div class="tagging__actions">
+      <button
+        class="tagging__actions__btn tagging__actions__btn--save"
+        (click)="saveTags()"
+      >
+        Save Tags
+      </button>
+      <button
+        class="tagging__actions__btn tagging__actions__btn--cancle"
+        (click)="closeDialog()"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>

@@ -19,7 +19,6 @@ export class ImgGalleryService {
       .subscribe((img) => {
         this.images = img;
         this.imagesChanged.next([...this.images]);
-        // console.log(this.images);
       });
   }
 
@@ -48,6 +47,13 @@ export class ImgGalleryService {
   updateImage(id: number, image: Image) {
     const index = this.images.findIndex((image) => image.id === id);
     this.images[index] = image;
+    this.imagesChanged.next(this.images.slice());
+    this.putImages();
+  }
+
+  updateImageTags(id: number, tags: any[]) {
+    const index = this.images.findIndex((image) => image.id === id);
+    this.images[index].tags = tags;
     this.imagesChanged.next(this.images.slice());
     this.putImages();
   }

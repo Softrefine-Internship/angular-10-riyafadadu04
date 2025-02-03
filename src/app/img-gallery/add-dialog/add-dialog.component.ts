@@ -1,7 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, Inject, Optional } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
-import { MatBottomSheet } from '@angular/material/bottom-sheet';
-import { MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_BOTTOM_SHEET_DATA,
+  MatBottomSheetRef,
+} from '@angular/material/bottom-sheet';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatChipInputEvent } from '@angular/material/chips';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { Image } from '../image.model';
@@ -15,21 +18,50 @@ import { ImgGalleryService } from '../img-gallery.service';
 export class AddDialogComponent {
   nameInput = new FormControl('', Validators.required);
   imageUrl: string | null = null; // for base64
+  image!: Image | null | undefined;
   selectedFile: File | null = null;
   tags: string[] = [];
   separatorKeysCodes: number[] = [ENTER, COMMA];
 
   constructor(
-    private bottomSheet: MatBottomSheet,
-    private dialogRef: MatDialogRef<AddDialogComponent>,
-    private imgGalleryService: ImgGalleryService
+    private imgGalleryService: ImgGalleryService,
+    @Optional() private dialogRef?: MatDialogRef<AddDialogComponent>,
+    @Optional()
+    @Inject(MAT_BOTTOM_SHEET_DATA)
+    private bottomSheetData?: Image | null,
+    @Optional() private bottomSheetRef?: MatBottomSheetRef<AddDialogComponent>,
+    @Optional() @Inject(MAT_DIALOG_DATA) private dialogData?: Image | null
   ) {}
 
+  get isMobileView(): boolean {
+    const width = window.innerWidth;
+    return width <= 768;
+  }
+
+  ngOnInit() {
+    this.image = this.isMobileView
+      ? this.bottomSheetData ?? null
+      : this.dialogData ?? null;
+    console.log(this.image);
+
+    if (this.image) {
+      this.nameInput.setValue(this.image.name);
+      this.imageUrl = this.image.imageUrl;
+      this.tags = this.image.tags.slice();
+    }
+  }
+
   closeDialog() {
-    if (window.innerWidth <= 768) {
-      this.bottomSheet.dismiss();
-    } else {
+    if (this.dialogRef) {
       this.dialogRef.close();
+    } else if (this.bottomSheetRef) {
+      this.bottomSheetRef.dismiss();
+    }
+  }
+
+  onFileDropped(files: FileList) {
+    if (files.length > 0) {
+      this.onFileSelect({ target: { files } });
     }
   }
 
@@ -47,32 +79,44 @@ export class AddDialogComponent {
   }
 
   saveImage() {
-    if (!this.nameInput.valid || !this.selectedFile) {
-      alert('Please provide an image name and select a file.');
+    if (!this.nameInput) {
+      alert('Please provide an image name.');
       return;
     }
 
-    const reader = new FileReader();
-    reader.readAsDataURL(this.selectedFile);
+    const name = this.nameInput.value || '';
+    const imageUrl = this.imageUrl || this.image?.imageUrl || '';
 
-    reader.onload = () => {
-      const newImage: Image = {
-        id: Date.now(),
-        name: this.nameInput.value || '',
-        uploadDate: new Date(),
-        tags: this.tags,
-        imageUrl: reader.result as string,
-      };
+    if (this.image) {
+      this.image.name = name;
+      this.image.imageUrl = imageUrl;
+      this.image.tags = [...this.tags];
+      this.image.uploadDate = this.image.uploadDate;
 
-      this.imgGalleryService.addImage(newImage);
-      console.log('Image Saved:', newImage);
+      this.imgGalleryService.updateImage(this.image.id, this.image);
       this.closeDialog();
-    };
+    } else {
+      if (!this.selectedFile) {
+        alert('Please select an image to upload.');
+        return;
+      }
 
-    reader.onerror = (error) => {
-      console.error('Error converting image:', error);
-      alert('Error processing image. Try again.');
-    };
+      const reader = new FileReader();
+      reader.readAsDataURL(this.selectedFile);
+
+      reader.onload = () => {
+        const newImage: Image = {
+          id: Date.now(),
+          name: this.nameInput.value || '',
+          uploadDate: new Date(),
+          tags: this.tags,
+          imageUrl: reader.result as string,
+        };
+
+        this.imgGalleryService.addImage(newImage);
+        this.closeDialog();
+      };
+    }
   }
 
   addTag(event: MatChipInputEvent) {

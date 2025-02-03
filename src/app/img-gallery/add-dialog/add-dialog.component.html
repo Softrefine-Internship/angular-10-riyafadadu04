@@ -1,8 +1,9 @@
 <div class="container">
   <div class="heading">
     <h2 mat-dialog-title class="heading__title">
-      <span><mat-icon class="header__title--icon">upload</mat-icon></span
-      ><span>ADD Image</span>
+      <span><mat-icon class="header__title--icon">upload</mat-icon></span>
+      <span *ngIf="image" class="header__title--change">Update Image</span>
+      <span *ngIf="!image" class="header__title--change">Add Image</span>
     </h2>
     <button mat-icon-button (click)="closeDialog()">
       <mat-icon>close</mat-icon>
@@ -18,7 +19,12 @@
     </mat-form-field>
 
     <!-- File Input -->
-    <div class="dropBox" (click)="fileInput.click()">
+    <div
+      class="dropBox"
+      appDragDrop
+      (fileDropped)="onFileDropped($event)"
+      (click)="fileInput.click()"
+    >
       <input
         type="file"
         accept="image/*"

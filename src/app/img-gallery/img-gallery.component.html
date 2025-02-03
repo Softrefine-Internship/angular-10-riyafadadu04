@@ -8,7 +8,7 @@
 
   <mat-form-field class="sort-field">
     <mat-label>Sort By</mat-label>
-    <mat-select required [formControl]="sortCtrl">
+    <mat-select [formControl]="sortCtrl">
       <mat-option value="">-- Select --</mat-option>
       <mat-option *ngFor="let sort of SortByList" [value]="sort">
         {{ sort }}
@@ -17,14 +17,64 @@
   </mat-form-field>
 </div>
 
-<div class="spinner" *ngIf="filteredImages.length === 0">
+<div
+  class="spinner"
+  *ngIf="
+    filteredImages.length === 0 && !searchCtrl.value && images.length === 0
+  "
+>
   <mat-spinner mode="indeterminate" color="accent"></mat-spinner>
+</div>
+
+<div
+  *ngIf="filteredImages.length === 0 && searchCtrl.value"
+  class="img-not-found"
+>
+  <p>No images found</p>
 </div>
 
 <div class="image-container" *ngIf="filteredImages.length > 0">
   <div class="gallery-grid">
     <mat-card *ngFor="let image of filteredImages" class="image-card">
-      <img [src]="image.imageUrl" alt="{{ image.name }}" />
+      <img
+        [src]="image.imageUrl"
+        alt="{{ image.name }}"
+        (click)="openViewDialog(image)"
+      />
+      <div class="action">
+        <button mat-icon-button (click)="OpenAddDialog(image)" class="btn">
+          <mat-icon class="btn__icon">edit</mat-icon>
+        </button>
+        <button mat-icon-button (click)="openDeleteDialog(image)" class="btn">
+          <mat-icon class="btn__icon">delete</mat-icon>
+        </button>
+      </div>
+      <div class="tags">
+        <button mat-mini-fab (click)="openTagDialog(image)" class="tags__btn">
+          <mat-icon class="tags__btn--icon">add_circle</mat-icon>
+        </button>
+        <mat-chip-listbox class="tags__list">
+          <mat-chip
+            *ngFor="let tag of image.tags.slice(0, 2)"
+            (click)="openTagDialog(image)"
+            class="tags__list--tag"
+          >
+            <mat-icon matChipAvatar class="label">label</mat-icon>
+            {{ tag }}
+          </mat-chip>
+          <mat-chip
+            *ngIf="image.tags.length > 2"
+            (click)="openTagDialog(image)"
+          >
+            +{{ image.tags.length - 2 }}
+          </mat-chip>
+        </mat-chip-listbox>
+      </div>
+    </mat-card>
+    <mat-card class="image-card image-card__add" (click)="OpenAddDialog()">
+      <div class="image-card__add--content">
+        <mat-icon>add_circle</mat-icon> Add image
+      </div>
     </mat-card>
   </div>
 </div>

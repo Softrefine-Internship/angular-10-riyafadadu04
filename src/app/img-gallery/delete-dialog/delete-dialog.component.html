@@ -1,1 +1,32 @@
-<p>delete-dialog works!</p>
+<div class="container">
+  <div class="heading">
+    <h2 mat-dialog-title class="heading__title">
+      <span><mat-icon class="header__title--icon">delete</mat-icon></span
+      ><span>Delete Image</span>
+    </h2>
+    <button mat-icon-button (click)="closeDialog()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div mat-dialog-content class="dialog-content">
+    <p>
+      Are you sure you want to delete <strong>{{ image?.name }}</strong> image?
+    </p>
+    <p><mat-icon>delete</mat-icon></p>
+    <div class="dialog-actions">
+      <button
+        class="dialog-actions__btn dialog-actions__btn--cancle"
+        (click)="closeDialog()"
+      >
+        Cancel
+      </button>
+      <button
+        class="dialog-actions__btn dialog-actions__btn--delete"
+        (click)="deleteImage()"
+      >
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
